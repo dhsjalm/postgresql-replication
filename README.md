@@ -37,3 +37,4 @@ slave2 ansible_host= ansible_port=22 ansible_user=
 postgresql-replication-slave
 postgresql-replication-master                                    
 ```
+```
