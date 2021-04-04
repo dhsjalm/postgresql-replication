@@ -1,0 +1,4 @@
+standby_mode = 'on'
+primary_conninfo = 'host={{ hostvars['master']['ansible_default_ipv4']['address'] }} port=5432 user=postgres password={{ PG_PASSWORD }}'
+trigger_file = '/tmp/postgresql.trigger.5432'
+restore_command = 'cp {{ ARCHIVE_DIR }}/%f "%p"'

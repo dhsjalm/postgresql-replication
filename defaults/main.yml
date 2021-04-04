@@ -1,0 +1,3 @@
+POSTGRES_VERSION: 11
+ARCHIVE_DIR: '/var/lib/pg-archive'
+PG_PASSWORD: admin

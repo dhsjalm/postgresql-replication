@@ -1,0 +1,35 @@
+- name: create .pgpass file for basebackup
+  copy:
+    content: admin
+    dest: /etc/.pg_pass
+  when: inventory_hostname == 'master'
+
+- name: stop postgresql on slave servers
+  service:
+    name: "postgresql@{{ POSTGRES_VERSION }}-main.service"
+    state: stopped
+
+- name: clear postgresql main directory
+  shell: "/bin/rm -rf /var/lib/postgresql/{{ POSTGRES_VERSION }}/main/*"
+
+- name: hold until postgresql on master is up and running
+  wait_for:
+    host: "{{ hostvars['master']['ansible_default_ipv4']['address'] }}"
+    port: 5432
+
+- name: run pg_basebackup
+  shell: "pg_basebackup -P -R -X stream -c fast -h {{ hostvars['master']['ansible_default_ipv4']['address'] }} -U postgres -D /var/lib/postgresql/{{ POSTGRES_VERSION }}/main"
+  become_user: postgres
+  when:
+
+- name: copy recovery.conf
+  template:
+    src: recovery.conf.j2
+    dest: "/var/lib/postgresql/{{ POSTGRES_VERSION }}/main/recovery.conf"
+    owner: postgres
+    group: postgres
+
+- name: start database
+  service:
+    name: "postgresql@{{ POSTGRES_VERSION }}-main.service"
+    state: started

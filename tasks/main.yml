@@ -1,0 +1,7 @@
+- import_tasks: postgresql-install.yml
+
+- import_tasks: master.yml
+  when: inventory_hostname == 'master'
+
+- import_tasks: slave.yml
+  when: inventory_hostname in groups['postgresql-replication-slave']

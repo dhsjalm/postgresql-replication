@@ -1,0 +1,45 @@
+- name: get the list of slave server ip's
+  set_fact:
+    slave_list={%for host in groups['postgresql-replication-slave']%}"{{hostvars[host].ansible_eth0.ipv4.address}}"{% if not loop.last %},{% endif %}{% endfor %}
+  tags:
+    - test
+  run_once: true
+  delegate_to: 127.0.0.1
+
+- name: create directory for wal logs
+  file:
+    state: directory
+    path: "{{ ARCHIVE_DIR }}"
+
+- name: setup postgres user password
+  postgresql_user:
+    db: postgres
+    name: postgres
+    password: "{{ PG_PASSWORD }}"
+  become_user: postgres
+
+- name: copy postgresql.conf
+  template:
+    src: postgresql.conf.j2
+    dest: "/etc/postgresql/{{ POSTGRES_VERSION }}/main/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  tags: configs
+
+- name: copy pg_hba.conf
+  template:
+    src: pg_hba.conf.j2
+    dest: "/etc/postgresql/{{ POSTGRES_VERSION }}/main/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  tags: configs
+  notify: restart posotgresql service
+
+- name: add cron to clear wal's
+  cron:
+    name: clear wal longer than 5 days
+    minute: "5"
+    hour: "3"
+    job: '/usr/bin/find /var/lib/pg-archive/ -type f -mtime +5 -exec rm {} \;'
