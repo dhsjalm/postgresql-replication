@@ -25,7 +25,6 @@ Example playbook and inventory:
 
 Inventory:
 ```
-```
 [postgresql-replication-master]
 master ansible_host= ansible_port=22 ansible_user=
 
@@ -36,5 +35,4 @@ slave2 ansible_host= ansible_port=22 ansible_user=
 [postgresql-replication-servers:children]
 postgresql-replication-slave
 postgresql-replication-master                                    
-```
 ```
